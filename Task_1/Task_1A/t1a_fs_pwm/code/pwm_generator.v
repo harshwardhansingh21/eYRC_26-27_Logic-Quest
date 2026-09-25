@@ -23,13 +23,47 @@ module pwm_generator(
     output reg clk_500Hz, pwm_signal
 );
 
-//////////////////DO NOT MAKE ANY CHANGES ABOVE THIS LINE //////////////////
-
-/*
- add your code here 
- */
+    localparam int TICK_COUNT        = 500;
+    localparam int COUNTS_PER_PERIOD = 20;
  
-//////////////////DO NOT MAKE ANY CHANGES BELOW THIS LINE//////////////////
+    reg [8:0] tick_cnt;
+    reg     tick;
+ 
+    always_ff @(posedge clk_5MHz or negedge reset_n) begin
+        if (!reset_n) begin
+            tick_cnt <= '0;
+            tick     <= 1'b0;
+        end else if (tick_cnt == TICK_COUNT - 1) begin
+            tick_cnt <= '0;
+            tick     <= 1'b1;
+        end else begin
+            tick_cnt <= tick_cnt + 1'b1;
+            tick     <= 1'b0;
+        end
+    end
+ 
+    logic [4:0] pwm_cnt;
+ 
+    always_ff @(posedge clk_5MHz or negedge reset_n) begin
+        if (!reset_n) begin
+            pwm_cnt <= '0;
+        end else if (tick) begin
+            if (pwm_cnt == COUNTS_PER_PERIOD - 1)
+                pwm_cnt <= '0;
+            else
+                pwm_cnt <= pwm_cnt + 1'b1;
+        end
+    end
+ 
+    always_ff @(posedge clk_5MHz or negedge reset_n) begin
+        if (!reset_n) begin
+            clk_500Hz  <= 1'b0;
+            pwm_signal <= 1'b0;
+        end else begin
+            clk_500Hz  <= (pwm_cnt < (COUNTS_PER_PERIOD / 2));
+            pwm_signal <= (pwm_cnt < pulse_width);
+        end
+    end
 
 endmodule
 
