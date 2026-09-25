@@ -23,14 +23,20 @@ module frequency_scaling (
     output reg clk_5MHz
 );
 
-//////////////////DO NOT MAKE ANY CHANGES ABOVE THIS LINE //////////////////
-
-
-/*
- add your code here 
- */
-
-//////////////////DO NOT MAKE ANY CHANGES BELOW THIS LINE //////////////////
-
+localparam int HALF_PERIOD = 5;
+ 
+    logic [2:0] cnt;
+ 
+    always_ff @(posedge clk_50MHz or negedge reset_n) begin
+        if (!reset_n) begin
+            cnt      <= '0;
+            clk_5MHz <= 1'b0;
+        end else if (cnt == HALF_PERIOD - 1) begin
+            cnt      <= '0;
+            clk_5MHz <= ~clk_5MHz;
+        end else begin
+            cnt <= cnt + 1'b1;
+        end
+    end
 endmodule
 
