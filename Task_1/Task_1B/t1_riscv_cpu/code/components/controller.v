@@ -10,20 +10,32 @@ module controller (
     output       MemWrite,
     output       PCSrc, ALUSrc,
     output       RegWrite, Jump,
-    output [1:0] ImmSrc,
-    output [2:0] ALUControl
+    output [2:0] ImmSrc,        // widened: 3 bits
+    output [2:0] ALUControl,
+    output       ALUSrcA,       // new: 0 = rs1, 1 = PC (auipc)
+    output       Jalr           // new: next PC = ALU result with bit 0 cleared
 );
 
 wire [1:0] ALUOp;
 wire       Branch;
 
-main_decoder    md (op, ResultSrc, MemWrite, Branch,
-                    ALUSrc, RegWrite, Jump, ImmSrc, ALUOp);
+main_decoder md (
+    .op        (op),
+    .ResultSrc (ResultSrc),
+    .MemWrite  (MemWrite),
+    .Branch    (Branch),
+    .ALUSrc    (ALUSrc),
+    .RegWrite  (RegWrite),
+    .Jump      (Jump),
+    .ImmSrc    (ImmSrc),
+    .ALUOp     (ALUOp),
+    .ALUSrcA   (ALUSrcA),
+    .Jalr      (Jalr)
+);
 
-alu_decoder     ad (op[5], funct3, funct7b5, ALUOp, ALUControl);
+alu_decoder ad (op[5], funct3, funct7b5, ALUOp, ALUControl);
 
-// for jump and branch
+// for jump and branch (JALR is handled separately in the datapath)
 assign PCSrc = (Branch & Zero) | Jump;
 
 endmodule
-
